@@ -725,8 +725,9 @@ impl TestContext {
         .unwrap();
 
         command
-            // When running the tests in a venv, ignore that venv, otherwise we'll capture warnings.
-            .env_remove(EnvVars::VIRTUAL_ENV)
+            // Ignore the host's configuration, including uv-specific env vars, but also
+            // XDG variables.
+            .env_clear()
             // Disable wrapping of uv output for readability / determinism in snapshots.
             .env(EnvVars::UV_NO_WRAP, "1")
             // While we disable wrapping in uv above, invoked tools may still wrap their output so
@@ -744,9 +745,6 @@ impl TestContext {
             // Since downloads, fetches and builds run in parallel, their message output order is
             // non-deterministic, so can't capture them in test output.
             .env(EnvVars::UV_TEST_NO_CLI_PROGRESS, "1")
-            .env_remove(EnvVars::UV_CACHE_DIR)
-            .env_remove(EnvVars::UV_TOOL_BIN_DIR)
-            .env_remove(EnvVars::XDG_CONFIG_HOME)
             .current_dir(self.temp_dir.path());
 
         for (key, value) in &self.extra_env {
